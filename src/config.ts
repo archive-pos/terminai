@@ -7,7 +7,7 @@ import * as fs from 'node:fs'
 const configBackend = {
     fileLoc: homedir() + '/terminai.json',
     cacheLoc: homedir() + '/terminai-cache.json',
-    api: "https://cdn.jsdelivr.net/npm/terminai/package.json",
+    api: "https://cdn.jsdelivr.net/npm/terminai/package.json" + '?' + Math.random(),
     version: "1.0.8",
     prod: process.env.NODE_ENV === 'production',
 }
