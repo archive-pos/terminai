@@ -63,14 +63,13 @@ ${getConfig().apiKey.trim() === "" ? chalk.red("No API key found. Run 'terminai 
 
     fetch(configBackend.api).then(res => res.json()).then(data => {
         if (((data as any)?.version !== configBackend.version)) {
-            console.log(chalk.red("New version available! Run 'npm i -g terminai' to update!"))
+            process.stdout.write("\r" + chalk.bgRed(chalk.black("New version released! Please update 🙂")) + " ".repeat(20) + "\r");
         }
     }).catch(err => {
-        // Silently fail
+        process.stdout.write("\r" + chalk.gray("You're updated. Go generate some commands now.") + " ".repeat(20) + "\r");
     }).finally(() => {
         fetched = true;
         clearInterval(updateInterval);
-        process.stdout.write("\r" + chalk.gray("You're up to date! Keep using Terminai!") + " ".repeat(20) + "\r");
     })
 
 

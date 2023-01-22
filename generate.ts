@@ -13,7 +13,8 @@ fs.readdirSync("./src").forEach((file) => {
 		outfile: `./dist/${file}`,
 		target: "es2019",
 		format: "cjs",
-		minify: configBackend.prod,
+		minify: true,
+		sourcemap: true,
 	});
 
 	// Remove the .ts extension
