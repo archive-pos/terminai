@@ -1,0 +1,10 @@
+{
+	"exclude": ["node_modules", "dist"],
+	"include": ["src"],
+	"ts-node": {
+		"swc": true
+	},
+	"compilerOptions": {
+		"esModuleInterop": true
+	}
+}
