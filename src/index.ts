@@ -61,6 +61,8 @@ ${getConfig().apiKey.trim() === "" ? chalk.red("No API key found. Run 'terminai 
     fetch(configBackend.api).then(res => res.json()).then(data => {
         if (((data as any)?.version !== configBackend.version)) {
             process.stdout.write("\r" + chalk.bgRed(chalk.black("New version released! Please update 🙂")) + " ".repeat(20) + "\r");
+        } else {
+            process.stdout.write("\r" + chalk.gray("You're updated. Go generate some commands now.") + " ".repeat(20) + "\r");
         }
     }).catch(err => {
         process.stdout.write("\r" + chalk.gray("You're updated. Go generate some commands now.") + " ".repeat(20) + "\r");

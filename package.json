@@ -1,6 +1,6 @@
 {
 	"name": "terminai",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "Generate CLI commands from natural language",
 	"main": "dist/index.js",
 	"scripts": {
