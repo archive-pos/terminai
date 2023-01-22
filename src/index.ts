@@ -34,7 +34,9 @@ fetch(configBackend.api).then(res => res.json()).then(data => {
     if (((data as any)?.version !== configBackend.version)) {
         console.log(chalk.red("      New version available! Run 'npm i -g terminai' to update!"))
     }
-}).catch(err => { })
+}).catch(err => { 
+    // Silently fail
+})
 
 if (parseArgs().length === 0 || parseArgs()[0] === "help") {
     console.log(help)

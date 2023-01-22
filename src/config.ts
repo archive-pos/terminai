@@ -13,7 +13,7 @@ import * as fs from 'node:fs'
 const configBackend = {
     fileLoc: homedir() + '/terminai.json',
     api: "https://terminai.tronic247.com/api",
-    version: JSON.parse(fs.readFileSync('./package.json', 'utf-8'))?.version || '0.0.0',
+    version: "1.0.3",
     prod: process.env.NODE_ENV === 'production',
 }
 
@@ -57,7 +57,5 @@ async function setConfig(config: typeof defaultConfig): Promise<void> {
         })
     })
 }
-
-
 
 export { setConfig, configBackend, getConfig }
