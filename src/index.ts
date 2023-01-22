@@ -58,9 +58,6 @@ Created by <g>@posandu</g>   <b>https://terminai.tronic247.com</b>
 ${getConfig().apiKey.trim() === "" ? chalk.red("No API key found. Run 'terminai config' to configure the CLI.") : chalk.green("API key found. You're good to go! Make sure it's valid.")}
 `
 
-
-
-
     fetch(configBackend.api).then(res => res.json()).then(data => {
         if (((data as any)?.version !== configBackend.version)) {
             process.stdout.write("\r" + chalk.bgRed(chalk.black("New version released! Please update 🙂")) + " ".repeat(20) + "\r");
