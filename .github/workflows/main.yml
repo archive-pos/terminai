@@ -1,5 +1,5 @@
 name: Generate
-run-name: ${{ github.actor }} is learning GitHub Actions
+run-name: Publish to NPM
 on: [push]
 jobs:
   check-bats-version:

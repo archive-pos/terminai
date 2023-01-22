@@ -1,6 +1,6 @@
 {
 	"name": "terminai",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Generate CLI commands from natural language",
 	"main": "dist/index.js",
 	"scripts": {
@@ -45,6 +45,6 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://www.github.com/posandu/terminai"
+		"url": "https://www.github.com/tronic247/terminai"
 	}
 }
