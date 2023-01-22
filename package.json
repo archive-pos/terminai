@@ -1,10 +1,11 @@
 {
 	"name": "terminai",
-	"version": "1.0.4",
+	"version": "1.0.6",
 	"description": "Generate CLI commands from natural language",
 	"main": "dist/index.js",
 	"scripts": {
-		"generate": "tsx generate.ts"
+		"generate": "tsx generate.ts",
+		"pub": "npm run generate && npm publish"
 	},
 	"keywords": [
 		"cli",
