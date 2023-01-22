@@ -26,6 +26,7 @@
 		"clipboardy": "^3.0.0",
 		"esbuild": "^0.17.3",
 		"node-fetch": "^2.6.8",
+		"open": "^8.4.0",
 		"openai": "^3.1.0",
 		"prompts": "^2.4.2",
 		"tsx": "^3.12.2",

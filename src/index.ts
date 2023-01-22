@@ -1,57 +1,94 @@
-import { getConfig, configBackend, setConfig } from "./config";
+import { getConfig, configBackend, setConfig, addToCache, getCache } from "./config";
 import { parseArgs } from "./utils";
 import chalk from "chalk";
 import fetch from 'node-fetch';
 import prompts from "prompts";
 import { Configuration, OpenAIApi } from "openai";
+import open from "open";
 
 //@ts-ignore
 const clipboardy = (...args: any) => import('clipboardy').then(({ default: clipboardy }) => clipboardy.writeSync(...args));
 
-const say = (text: string) => {
-    console.log("      " + text.split("\n").join("\n      "))
-}
+const say = (text: string) => console.log(text.replace(/<c>(.*?)<\/c>/g, chalk.cyan("$1")) // Cyan
+    .replace(/<g>(.*?)<\/g>/g, chalk.green("$1")) // Green
+    .replace(/<b>(.*?)<\/b>/g, chalk.blue("$1")) // Blue 
+    .replace(/<y>(.*?)<\/y>/g, chalk.yellow("$1")) // Yellow
+    .replace(/<m>(.*?)<\/m>/g, chalk.magenta("$1")) // Magenta
+);
 
-let help = `
-      ${chalk.cyan("Terminai")} - Generate CLI commands with AI
-      Created by ${chalk.green("@posandu")} - ${chalk.blue("https://terminai.tronic247.com")}
+const encode = (text: string) => text.split("").map(c => String.fromCharCode(c.charCodeAt(0) + 1)).reverse().map(c => String.fromCharCode(c.charCodeAt(0) + 1)).join("");
+const decode = (text: string) => text.split("").map(c => String.fromCharCode(c.charCodeAt(0) - 1)).reverse().map(c => String.fromCharCode(c.charCodeAt(0) - 1)).join("");
 
-      ${chalk.yellow("Version:")} ${chalk.green(configBackend.version)}
-      ${chalk.magenta("Support https://bit.ly/3t1NZxX")}
+/**
+ * Command functions
+ */
+/**
+ * Help screen
+ */
+function home() {
+    let updateProgress = 0;
+    let fetched = false;
+    const frames = "▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ▇ ▆ ▅ ▄ ▃ ▁".split(" ");
+    let updateInterval = setInterval(() => {
+        if (fetched) {
+            clearInterval(updateInterval);
+            return;
+        }
 
-      ${chalk.yellow("Usage:")} 
-      ${chalk.green("terminai")} ${chalk.blue("[command]")}
+        process.stdout.write(`\r${chalk.yellow("Checking for updates...")} ${frames[updateProgress]}`);
+        updateProgress = (updateProgress + 1) % frames.length;
+    }, 100);
 
-      ${chalk.yellow("Commands:")}
-      ${chalk.green("help")} ${chalk.gray("- Show this help message")}
-      ${chalk.green("config")} ${chalk.gray("- Configure the CLI")}
-      ${chalk.green("\"(a string)\"")} ${chalk.gray("- Generate a command from the string")}
 
-      ${getConfig().apiKey.trim() === "" ? chalk.red("     No API key found. Run 'terminai config' to configure the CLI.") : chalk.green("API key found. You're good to go! Make sure it's valid.")}
+
+    let help = `
+<c>Terminai</c>              Generate CLI commands with AI
+Created by <g>@posandu</g>   <b>https://terminai.tronic247.com</b>
+
+<y>Version:</y> <g>${configBackend.version}</g> | <m>Support https://bit.ly/3t1NZxX</m>
+
+<y>Usage:</y> <g>terminai</g> <b>[command]</b>
+
+<y>Commands:</y> <g>help</g> <b>- Show this help message</b>
+          <g>config</g> <b>- Configure the CLI</b>
+          <g>"(a string)"</g> <b>- Generate a command from the string</b>
+          <g>opConfig</g> <b>- Open the config file (Edit with caution)</b>
+          <g>opCache</g> <b>- Open the cache file (Edit with caution)</b>
+
+${getConfig().apiKey.trim() === "" ? chalk.red("No API key found. Run 'terminai config' to configure the CLI.") : chalk.green("API key found. You're good to go! Make sure it's valid.")}
 `
 
-fetch(configBackend.api).then(res => res.json()).then(data => {
-    if (((data as any)?.version !== configBackend.version)) {
-        console.log(chalk.red("      New version available! Run 'npm i -g terminai' to update!"))
-    }
-}).catch(err => { 
-    // Silently fail
-})
 
-if (parseArgs().length === 0 || parseArgs()[0] === "help") {
-    console.log(help)
+
+
+    fetch(configBackend.api).then(res => res.json()).then(data => {
+        if (((data as any)?.version !== configBackend.version)) {
+            console.log(chalk.red("New version available! Run 'npm i -g terminai' to update!"))
+        }
+    }).catch(err => {
+        // Silently fail
+    }).finally(() => {
+        fetched = true;
+        clearInterval(updateInterval);
+        process.stdout.write("\r" + chalk.gray("You're up to date! Keep using Terminai!") + " ".repeat(20) + "\r");
+    })
+
+
+    say(help);
 }
 
-else if (parseArgs()[0] === "config") {
+/**
+ * Configuration screen
+ */
+function config() {
     say(chalk.yellow("Terminai Configuration"));
 
     (async () => {
         let apikey = await prompts({
-            type: "text",
+            type: "password",
             name: "value",
             message: "API Key",
-            initial: getConfig().apiKey,
-            mask: "*",
+            initial: decode(getConfig().apiKey),
         })
 
         let shell = await prompts({
@@ -66,32 +103,59 @@ else if (parseArgs()[0] === "config") {
             initial: getConfig().shell === "bash" ? 0 : getConfig().shell === "powershell" ? 1 : 2
         })
 
+        let useCache = await prompts({
+            type: "toggle",
+            name: "value",
+            message: "Use cache?",
+            initial: getConfig().useCache,
+            active: "yes",
+            inactive: "no"
+        })
+
         if (apikey.value.trim() === "") {
             console.log(chalk.yellow("API key is empty. Reverting to default."))
             apikey.value = getConfig().apiKey
         }
 
         setConfig({
-            apiKey: apikey.value,
-            shell: shell.Shell
+            apiKey: encode(apikey.value),
+            shell: shell.Shell,
+            useCache: useCache.value
         })
     })()
 }
 
-else {
+/**
+ * Generate command
+ */
+function generate() {
     say(chalk.yellow("Generating command... Hang tight!"));
+
+    const prompt = parseArgs()[0];
+
+    const showCode = (code: string) => {
+        say(chalk.green("Generated command:"));
+        say(code);
+        clipboardy(code);
+        say(chalk.blue("Copied to clipboard!"));
+    }
+
+    if (getCache()[prompt]) {
+        showCode(getCache()[prompt]);
+        return;
+    }
 
     (async () => {
         try {
             const configuration = new Configuration({
-                apiKey: getConfig().apiKey,
+                apiKey: decode(getConfig().apiKey),
             });
 
             const openai = new OpenAIApi(configuration);
 
             const response = await openai.createCompletion({
                 model: "text-davinci-003",
-                prompt: `generate the one-liner ${getConfig().shell} command for the given JSON prompt\nprompt:"${JSON.stringify(parseArgs()[0])}"\ncommand:`,
+                prompt: `generate the one-liner ${getConfig().shell} command for the given JSON prompt\nprompt:"${JSON.stringify(prompt)}"\ncommand:`,
                 temperature: 0.7,
                 max_tokens: 256,
                 top_p: 1,
@@ -102,14 +166,37 @@ else {
             const val = response.data.choices[0].text;
 
             if (val.trim()) {
-                say(chalk.green("Generated command:"));
-                say(val);
-                clipboardy(val);
-                say(chalk.blue("Copied to clipboard!"));
+                showCode(val);
+
+                if (getConfig().useCache) addToCache(prompt, val);
             }
         } catch (error) {
-            say(chalk.red(error))
+            say(chalk.red(error) + " " + "Make sure your API key is valid. Run 'terminai config' to configure the CLI.")
         }
     })()
 }
 
+/**
+ * Open config file
+ */
+function opConfig() {
+    say(chalk.yellow("Opening config file..."));
+    open(configBackend.fileLoc);
+}
+
+/**
+ * Open cache file
+ */
+function opCache() {
+    say(chalk.yellow("Opening cache file..."));
+    open(configBackend.cacheLoc);
+}
+
+/**
+ * Command handler
+ */
+if (parseArgs().length === 0 || parseArgs()[0] === "help") home();
+else if (parseArgs()[0] === "config") config();
+else if (parseArgs()[0] === "opConfig") opConfig();
+else if (parseArgs()[0] === "opCache") opCache();
+else generate();
