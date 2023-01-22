@@ -39,8 +39,6 @@ function home() {
         updateProgress = (updateProgress + 1) % frames.length;
     }, 100);
 
-
-
     let help = `
 <c>Terminai</c>              Generate CLI commands with AI
 Created by <g>@posandu</g>   <b>https://terminai.tronic247.com</b>
@@ -138,7 +136,10 @@ function generate() {
         say(chalk.blue("Copied to clipboard!"));
     }
 
-    if (getCache()[prompt]) {
+    if (getCache()[JSON.stringify({
+        name: prompt,
+        shell: getConfig().shell
+    })] && getConfig().useCache) {
         showCode(getCache()[prompt]);
         return;
     }
@@ -166,7 +167,10 @@ function generate() {
             if (val.trim()) {
                 showCode(val);
 
-                if (getConfig().useCache) addToCache(prompt, val);
+                if (getConfig().useCache) addToCache({
+                    name: prompt,
+                    shell: getConfig().shell,
+                }, val);
             }
         } catch (error) {
             say(chalk.red(error) + " " + "Make sure your API key is valid. Run 'terminai config' to configure the CLI.")

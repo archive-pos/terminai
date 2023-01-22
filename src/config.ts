@@ -7,8 +7,8 @@ import * as fs from 'node:fs'
 const configBackend = {
     fileLoc: homedir() + '/terminai.json',
     cacheLoc: homedir() + '/terminai-cache.json',
-    api: "https://cdn.jsdelivr.net/npm/terminai/package.json" + '?' + Math.random(),
-    version: "1.0.9",
+    api: "https://raw.githubusercontent.com/Tronic247/terminai/main/package.json" + '?' + Math.random(),
+    version: "1.1.0",
     prod: process.env.NODE_ENV === 'production',
 }
 
@@ -69,11 +69,14 @@ function getCache(): { [key: string]: string } {
 /**
  * Add to cache
  */
-async function addToCache(key: string, value: string): Promise<void> {
+async function addToCache(key: {
+    name: string,
+    shell: "bash" | "powershell" | "cmd",
+}, value: string): Promise<void> {
     return new Promise((resolve, reject) => {
         const cache = getCache()
 
-        cache[key] = value
+        cache[JSON.stringify(key)] = value
 
         fs.writeFile(configBackend.cacheLoc, JSON.stringify(cache), (err) => {
             if (err) {
