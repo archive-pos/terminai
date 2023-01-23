@@ -8,7 +8,7 @@ const configBackend = {
     fileLoc: homedir() + '/terminai.json',
     cacheLoc: homedir() + '/terminai-cache.json',
     api: "https://raw.githubusercontent.com/Tronic247/terminai/main/package.json" + '?' + Math.random(),
-    version: "1.1.0",
+    version: "1.1.1",
     prod: process.env.NODE_ENV === 'production',
 }
 
@@ -88,4 +88,26 @@ async function addToCache(key: {
     })
 }
 
-export { setConfig, configBackend, getConfig, getCache, addToCache }
+/**
+ * Remove from cache
+ */
+async function removeFromCache(key: {
+    name: string,
+    shell: "bash" | "powershell" | "cmd",
+}): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const cache = getCache()
+
+        delete cache[JSON.stringify(key)]
+
+        fs.writeFile(configBackend.cacheLoc, JSON.stringify(cache), (err) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve()
+            }
+        })
+    })
+}
+
+export { setConfig, configBackend, getConfig, getCache, addToCache, removeFromCache }

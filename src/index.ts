@@ -1,4 +1,4 @@
-import { getConfig, configBackend, setConfig, addToCache, getCache } from "./config";
+import { getConfig, configBackend, setConfig, addToCache, getCache, removeFromCache } from "./config";
 import { parseArgs } from "./utils";
 import chalk from "chalk";
 import fetch from 'node-fetch';
@@ -45,11 +45,12 @@ Created by <g>@posandu</g>   <b>https://terminai.tronic247.com</b>
 
 <y>Version:</y> <g>${configBackend.version}</g> | <m>Support https://bit.ly/3t1NZxX</m>
 
-<y>Usage:</y> <g>terminai</g> <b>[command]</b>
+<y>Usage:</y> <g>terminai</g> <b>[command]</b> <g>[args]</g>
 
 <y>Commands:</y> <g>help</g> <b>- Show this help message</b>
           <g>config</g> <b>- Configure the CLI</b>
           <g>"(a string)"</g> <b>- Generate a command from the string</b>
+                     <y>args:</y> <b>--r</b> <g>- Rewrite cache</g>
           <g>opConfig</g> <b>- Open the config file (Edit with caution)</b>
           <g>opCache</g> <b>- Open the cache file (Edit with caution)</b>
 
@@ -127,13 +128,32 @@ function config() {
 function generate() {
     say(chalk.yellow("Generating command... Hang tight!"));
 
-    const prompt = parseArgs()[0];
+    const prompt = parseArgs()[0].trim();
+    const rewriteCache = parseArgs().includes("--r");
+
+    if (!prompt.trim()) {
+        say(chalk.red("No prompt provided!"));
+        return;
+    }
+
+    if (rewriteCache && !getConfig().useCache) {
+        say(chalk.bgYellowBright(chalk.black("Cache is disabled! No need to rewrite cache.")));
+    } else if (rewriteCache && getConfig().useCache) {
+        say(chalk.bgYellowBright(chalk.black("Rewriting cache...")));
+    }
 
     const showCode = (code: string) => {
         say(chalk.green("Generated command:"));
         say(code);
         clipboardy(code);
         say(chalk.blue("Copied to clipboard!"));
+    }
+
+    if (rewriteCache) {
+        removeFromCache({
+            name: prompt,
+            shell: getConfig().shell
+        })
     }
 
     if (getCache()[JSON.stringify({
