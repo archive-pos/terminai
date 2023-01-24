@@ -9,7 +9,7 @@ import open from "open";
 //@ts-ignore
 const clipboardy = (...args: any) => import('clipboardy').then(({ default: clipboardy }) => clipboardy.writeSync(...args));
 
-const say = (text: string) => console.log(text.replace(/<c>(.*?)<\/c>/g, chalk.cyan("$1")) // Cyan
+const say = (text: string) => console.log((text || "").replace(/<c>(.*?)<\/c>/g, chalk.cyan("$1")) // Cyan
     .replace(/<g>(.*?)<\/g>/g, chalk.green("$1")) // Green
     .replace(/<b>(.*?)<\/b>/g, chalk.blue("$1")) // Blue 
     .replace(/<y>(.*?)<\/y>/g, chalk.yellow("$1")) // Yellow
@@ -149,18 +149,17 @@ function generate() {
         say(chalk.blue("Copied to clipboard!"));
     }
 
-    if (rewriteCache) {
-        removeFromCache({
-            name: prompt,
-            shell: getConfig().shell
-        })
-    }
-
-    if (getCache()[JSON.stringify({
+    const key = {
         name: prompt,
         shell: getConfig().shell
-    })] && getConfig().useCache) {
-        showCode(getCache()[prompt]);
+    };
+
+    if (rewriteCache) {
+        removeFromCache(key)
+    }
+
+    if (getCache()[JSON.stringify(key)] && getConfig().useCache) {
+        showCode(getCache()[JSON.stringify(key)]);
         return;
     }
 

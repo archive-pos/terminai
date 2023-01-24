@@ -35,7 +35,13 @@ function getConfig(): typeof defaultConfig {
         return defaultConfig
     }
 
-    return JSON.parse(fs.readFileSync(configBackend.fileLoc, 'utf-8'))
+    try {
+        return JSON.parse(fs.readFileSync(configBackend.fileLoc, 'utf-8'))
+    } catch (error) {
+        fs.writeFileSync(configBackend.fileLoc, JSON.stringify(defaultConfig))
+
+        return defaultConfig
+    }
 }
 
 /** 
@@ -63,7 +69,13 @@ function getCache(): { [key: string]: string } {
         return {}
     }
 
-    return JSON.parse(fs.readFileSync(configBackend.cacheLoc, 'utf-8'))
+    try {
+        return JSON.parse(fs.readFileSync(configBackend.cacheLoc, 'utf-8'))
+    } catch (error) {
+        fs.writeFileSync(configBackend.cacheLoc, JSON.stringify({}))
+
+        return {}
+    }
 }
 
 /**
@@ -96,7 +108,7 @@ async function removeFromCache(key: {
     shell: "bash" | "powershell" | "cmd",
 }): Promise<void> {
     return new Promise((resolve, reject) => {
-        const cache = getCache()
+        const cache = getCache() || {}
 
         delete cache[JSON.stringify(key)]
 
