@@ -84,7 +84,7 @@ function config() {
         let apikey = await prompts({
             type: "password",
             name: "value",
-            message: "API Key",
+            message: "OpenAI API Key (Visit https://beta.openai.com/account/api-keys)",
             initial: decode(getConfig().apiKey),
         })
 

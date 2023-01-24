@@ -8,7 +8,7 @@ const configBackend = {
     fileLoc: homedir() + '/terminai.json',
     cacheLoc: homedir() + '/terminai-cache.json',
     api: "https://raw.githubusercontent.com/Tronic247/terminai/main/package.json" + '?' + Math.random(),
-    version: "1.1.1",
+    version: "1.1.2",
     prod: process.env.NODE_ENV === 'production',
 }
 
